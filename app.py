@@ -19,6 +19,36 @@ def get_db():
     return _pokemon_db
 
 
+def get_sprites(name: str, pid: int):
+    """
+    Calls PokéAPI to get the correct sprite URLs for any form.
+    Regional variants (sandshrew-alola, slowpoke-galar, etc.) and megas
+    all have their own high internal IDs (10000+) in the sprite repo.
+    PokéAPI's /pokemon/<name> response has the exact correct URLs already —
+    we just read them directly instead of constructing from the dex ID.
+    """
+    try:
+        r = requests.get(
+            f"https://pokeapi.co/api/v2/pokemon/{name}",
+            timeout=8,
+            headers={"User-Agent": "pokedex-app/1.0"}
+        )
+        if r.ok:
+            data = r.json()
+            # PokéAPI's own `id` field is the sprite repo ID for forms (e.g. 10164)
+            sprite_id = data.get("id", pid)
+            normal = f"{SPRITE_BASE}/other/official-artwork/{sprite_id}.png"
+            shiny  = f"{SPRITE_BASE}/other/official-artwork/shiny/{sprite_id}.png"
+            return normal, shiny
+    except Exception:
+        pass
+    # Fallback — correct for base forms, wrong for regional variants if API is down
+    return (
+        f"{SPRITE_BASE}/other/official-artwork/{pid}.png",
+        f"{SPRITE_BASE}/other/official-artwork/shiny/{pid}.png",
+    )
+
+
 HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -503,13 +533,14 @@ def pokemon_detail(n):
     if not pokemon:
         return jsonify({"error": f"'{n}' was not found in the Pokédex."}), 404
     pid = pokemon["id"]
+    sprite, shiny_sprite = get_sprites(pokemon["name"], pid)
     return jsonify({
         "id": pid,
         "name": pokemon["name"],
         "types": pokemon.get("types", []),
         "entry": pokemon.get("entry", "No Pokédex entry available."),
-        "sprite": f"{SPRITE_BASE}/other/official-artwork/{pid}.png",
-        "shiny_sprite": f"{SPRITE_BASE}/other/official-artwork/shiny/{pid}.png",
+        "sprite": sprite,
+        "shiny_sprite": shiny_sprite,
     })
 
 
