@@ -192,7 +192,6 @@ HTML = """<!DOCTYPE html>
 
     #pokemon-sprite {
       width: 180px; height: 180px;
-      image-rendering: pixelated;
       filter: drop-shadow(0 8px 20px rgba(0,0,0,0.6));
       transition: transform 0.3s ease;
       cursor: pointer;
@@ -509,8 +508,8 @@ def pokemon_detail(n):
         "name": pokemon["name"],
         "types": pokemon.get("types", []),
         "entry": pokemon.get("entry", "No Pokédex entry available."),
-        "sprite": f"{SPRITE_BASE}/{pid}.png",
-        "shiny_sprite": f"{SPRITE_BASE}/shiny/{pid}.png",
+        "sprite": f"{SPRITE_BASE}/other/official-artwork/{pid}.png",
+        "shiny_sprite": f"{SPRITE_BASE}/other/official-artwork/shiny/{pid}.png",
     })
 
 
